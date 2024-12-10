@@ -29,7 +29,7 @@ export const siteConfig = {
   ],
   
   links: {
-    github: "https://github.com/nextui-org/nextui",
+    github: "https://github.com/david-love121/tectonic-plate-sim",
    
   },
   fonts: {sans: inter, mono: roboto_mono}
