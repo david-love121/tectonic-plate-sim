@@ -2,14 +2,14 @@
 import React from "react";
 import {useEffect, useState, FC} from "react";
 import { Suspense } from 'react'
-import {Canvas, useFrame, useLoader} from "@react-three/fiber"
+import {Canvas, ThreeElement, useFrame, useLoader} from "@react-three/fiber"
 import { OrbitControls, useTexture } from "@react-three/drei";
-import { Mesh, MeshBasicMaterialParameters, MeshStandardMaterial, SphereGeometry, TextureLoader  } from 'three'
+import { Light, Mesh, MeshBasicMaterialParameters, MeshStandardMaterial, SphereGeometry, TextureLoader  } from 'three'
 import useSWR, { SWRConfig, Fetcher } from 'swr'
-import { element, string, texture } from "three/webgpu";
+import { element, lightTargetDirection, string, texture } from "three/webgpu";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { url } from "inspector";
-
+import * as THREE from 'three'
  const ErrorMaterial: FC<MeshBasicMaterialParameters> = () => {
     return(
         <meshBasicMaterial color="hotpink" ></meshBasicMaterial>
@@ -70,10 +70,10 @@ function RotatingBox() : React.ReactNode {
        //ref.current.rotation.y = -Math.sin(state.clock.getElapsedTime());
     })
     return(
-        <mesh ref={ref} rotation={[1, 1, 0]}>
+        <group ref={ref} rotation={[1, 1, 0]}>
             <boxGeometry args={[1, 1, 1]}  />
             <StandardMaterial assetsDirectory="ganges_river_pebbles"></StandardMaterial>
-        </mesh>
+        </group>
     )
 }
 function DynamicLandMesh(
@@ -83,22 +83,52 @@ function DynamicLandMesh(
     
 }
 
+function FrameChecker({sphereRef, callback}: {sphereRef: React.RefObject<THREE.Mesh>, callback: Function}) {
+    useFrame(() => {
+        if (sphereRef.current != null) {
+            callback();
+        }
+    })
+    return (<></>)
+}
 export default function SimulatorPage(
     { children } : {children: React.ReactNode}) {
-  
-        return(
+        const sphereRef = React.useRef<THREE.Mesh>(null!);
+        const lightRef = React.useRef<THREE.SpotLight>(null!);
+
+        const [geometryLoaded, setGeometryLoaded] = useState(false);
+        //Weirdly useEffect doesn't rerun when the sphere has finished mounting, so I added
+        //a check each frame for it
+        //Trigger a rerender when geometry is loaded to add geometry that is dependent on others
+        useEffect(() => {
+            if (geometryLoaded) {
+                lightRef.current.target = sphereRef.current;
+                lightRef.current.visible = true;
+
+                console.log("spotlight enabled");
+                
+            }
+          }, [geometryLoaded]);
+        
+        return( 
 
 
 
         <Canvas fallback={<div>Sorry no WebGL supported!</div>}>
-                <ambientLight intensity={0.2} color="red" />
-                <directionalLight position={[0, 0, 10]} color="white" />
-                <mesh>
-                <sphereGeometry args={[1, 100, 100]} />
-                <StandardMaterial assetsDirectory="ganges_river_pebbles"></StandardMaterial>
+                <FrameChecker sphereRef={sphereRef} callback={() => {setGeometryLoaded(true)}}/>
+                <ambientLight intensity={0.5} color="white" />
+                
+                <mesh ref={sphereRef} >
+                    <sphereGeometry args={[1, 100, 100]} />
+                    <StandardMaterial assetsDirectory="ganges_river_pebbles"></StandardMaterial>
+                    <spotLight position={[10, 10, 10]} angle={0.1} penumbra={1} decay={0} color="purple" ref={lightRef} visible={true} intensity={3}/>
+
                 </mesh>
+                
         <OrbitControls></OrbitControls>
+
         </Canvas>
+
 
 
     )

@@ -3,3 +3,6 @@ This is a (very) work in progress online tectonic plate simulator. It is being d
 
 ## Packages 
 Currently this app is running on React 19, which was breaking for many npm packages. The app's current package list has conflicts but works if installed using --force. 
+
+## Assets
+The github does not include assets for materials and textures.
