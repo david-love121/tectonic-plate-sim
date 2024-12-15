@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import type { Metadata } from "next";
 import {useRouter} from "next/navigation";
 import {NextUIProvider} from "@nextui-org/react";

@@ -1,4 +1,4 @@
-
+"use client"
 import "./globals.css";
 import {NextUIProvider} from "@nextui-org/system";
 import {Provider} from "@/components/provider"
